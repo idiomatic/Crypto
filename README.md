@@ -9,12 +9,16 @@ multiplayer online role-playing game.
 [Lua](https://www.lua.org/) is a lightweight programming language well
 suited for embedding into applications.
 
-World of Warcraft wisely (up until now) empowered the players access
-to an game client API through add-ons written in Lua.  Missing from
-this client is cryptographic primitives and big (or even small)
-integer math... until now.
+World of Warcraft wisely (up until now) empowered the players to
+extend the game through add-ons written in Lua.  Missing from the
+client API is cryptographic primitives and big (or even small) integer
+math... until now.
 
-**DISCLAIMER** This is not endorsed by the NaCl core developers.
+This library implements (some) of the NaCl Cryptographic Library API
+with a balance between correctness, readability, and efficiency.
+
+**DISCLAIMER** This is not endorsed by the NaCl core developers nor
+Activision Blizzard.
 
 **DISCLAIMER** This is not fully implemented.  Priority is given to
 implementing hashing and signing.
@@ -53,10 +57,11 @@ the client extends the capabilities of World of Warcraft.
 ### Player Identification
 
 Certain players (*e.g.*, add-on developers) may wish to be identified,
-perhaps as immediately as upon character rolling.  However, neither
-character names nor player identity are global.  There is a chance a
-[hard coded](https://en.wikipedia.org/wiki/Hard_coding) character name
-is already taken on a realm, or a character may be forced to rename.
+perhaps as immediately as upon character rolling.  However, character
+names are not global nor is player identity exposed.  [Hard
+coding](https://en.wikipedia.org/wiki/Hard_coding) a character name is
+fragile as it may already taken on a new realm, or a character may be
+forced to rename.
 
 Alternatively, a published public key can be applied to an
 add-on-channel broadcasted announcement message originating from the
@@ -85,22 +90,24 @@ lost.
 A player providing a useful service may receive in-game currency tips
 by identifying themselves and embedding a mailbox hook.  It is
 recommended that a non-invasive player-centric-designed UI be present,
-otherwise the add-on risks becoming spurned &mdash; and other add-ons
-with tipping that respects the player are tainted.  Specifically:
+otherwise the add-on risks becoming spurned &mdash; and other more
+player-respectful add-ons also with tipping become tainted.
+
+Specific recommendations include:
 
 * a modest button in the add-on's main frame's lower-right corner,
   about box, or settings panel.
 * pressing the button presents an easily dismissible panel to specify
-  a pledge.
+  a pledge amount.
 * the panel may inoffensively disregard comically minuscule amounts
   (*e.g.*, less than 1 silver).
 * the pledge panel may reveal whether the recipient is known on this
-  realm, and how recently since the last identity announcement; this
-  would be a reasonable time to request it if not already known nor
-  overheard.
-* upon character arrival to a mailbox with an outstanding pledge
-  exceeding their gold-on-hand, the add-on sends mail with tip
-  attached to the recipient (minus postage).
+  realm, and the age of the most recent valid identity announcement;
+  this would be a suitable time to request the identity if not already
+  known nor overheard.
+* upon character arrival to a mailbox with an outstanding pledge less
+  than their gold-on-hand, the add-on sends mail with tip attached to
+  the recipient (minus postage).
 * the mailbox panel should not have its behavior overtly changed; it
   should discretely send the tip rather than linger in the message
   composition panel.
@@ -108,6 +115,11 @@ with tipping that respects the player are tainted.  Specifically:
   confirm sending an amount; this behavior should be left as-is.
 * the player may be notified in the default chat frame that the tip
   was sent, as to explain why the "coin drop" sound just played.
+* the player may be notified in the default chat frame that there are
+  insufficent funds at this time; this message may be omitted on
+  subsequent mailbox visits.
+* the insufficient funds default chat frame message may include
+  instructions how to revise or cancel the pledge.
 * once the tip is believed sent, the add-on should reset the pledge to
   zero, with a preference to resetting versus sending duplicates.
 
