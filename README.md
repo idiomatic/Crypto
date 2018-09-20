@@ -53,25 +53,63 @@ the client extends the capabilities of World of Warcraft.
 ### Player Identification
 
 Certain players (*e.g.*, add-on developers) may wish to be identified,
-perhaps as immediately as upon character rolling.  However, character
-names are not global, and thus there is a chance a [hard
-coded](https://en.wikipedia.org/wiki/Hard_coding) character name is
-already taken on a realm.  Alternatively, a published public key can
-be applied to an add-on-channel broadcasted announcement message
-originating from the public player.
+perhaps as immediately as upon character rolling.  However, neither
+character names nor player identity are global.  There is a chance a
+[hard coded](https://en.wikipedia.org/wiki/Hard_coding) character name
+is already taken on a realm, or a character may be forced to rename.
+
+Alternatively, a published public key can be applied to an
+add-on-channel broadcasted announcement message originating from the
+public player.  That message can be repeated upon request by an
+uninformed player with respondents choosing
+[unicast](https://en.wikipedia.org/wiki/Unicast), broadcast, or ignore
+appropriately to avoid [amplification
+attacks](https://en.wikipedia.org/wiki/Denial-of-service_attack#Amplification).
+
+To avoid spreading misinformation after a character rename or
+deletion, the stashed identification message should eventually expire,
+and be superseded by the most recent valid message.  It is up to the
+public player to defend their character name until the expiration.
 
 ### Data Croudsourcing
 
 Once a character has been identified, an add-on developer can collect
-buffered messages from add-on users.
+buffered messages from add-on users.  It is recommended that automatic
+data be capped or
+[FIFO](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics))
+to avoid add-on data bloat when the collector is away, unknown, or
+lost.
 
 ### Tipping
 
 A player providing a useful service may receive in-game currency tips
 by identifying themselves and embedding a mailbox hook.  It is
-recommended that a non-invasive user-centric-designed player-sensitive
-UI be present, otherwise the add-on risks becoming spurned &mdash; and
-other add-ons with tipping that respects the player are tainted.
+recommended that a non-invasive player-centric-designed UI be present,
+otherwise the add-on risks becoming spurned &mdash; and other add-ons
+with tipping that respects the player are tainted.  Specifically:
+
+* a modest button in the add-on's main frame's lower-right corner,
+  about box, or settings panel.
+* pressing the button presents an easily dismissible panel to specify
+  a pledge.
+* the panel may inoffensively disregard comically minuscule amounts
+  (*e.g.*, less than 1 silver).
+* the pledge panel may reveal whether the recipient is known on this
+  realm, and how recently since the last identity announcement; this
+  would be a reasonable time to request it if not already known nor
+  overheard.
+* upon character arrival to a mailbox with an outstanding pledge
+  exceeding their gold-on-hand, the add-on sends mail with tip
+  attached to the recipient (minus postage).
+* the mailbox panel should not have its behavior overtly changed; it
+  should discretely send the tip rather than linger in the message
+  composition panel.
+* the mail with the attached tip may trigger the mailbox panel to
+  confirm sending an amount; this behavior should be left as-is.
+* the player may be notified in the default chat frame that the tip
+  was sent, as to explain why the "coin drop" sound just played.
+* once the tip is believed sent, the add-on should reset the pledge to
+  zero, with a preference to resetting versus sending duplicates.
 
 ### Man-in-the-Middle Communication
 
@@ -79,6 +117,17 @@ A character may wish to send information to another character through
 an intermediary.  The intermediary might be untrusted, and/or the
 destination character might be on a different realm visited by the
 intermediary.
+
+### Distributed Database
+
+A group of players may wish to create and share information aided by
+player identification and data verification.
+
+* [DKP](https://en.wikipedia.org/wiki/Dragon_kill_points) or other guild resource management
+* In-game [wiki](https://en.wikipedia.org/wiki/Wiki) or [blog](https://en.wikipedia.org/wiki/Blog) or other article publishing system
+* [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) for a [collaborative editing](https://en.wikipedia.org/wiki/Collaborative_editing)
+* [Merkle trees](https://en.wikipedia.org/wiki/Merkle_tree) for data synchronization
+* [Blockchain](https://en.wikipedia.org/wiki/Blockchain) for distributed ledger
 
 ### Code Distribution
 
@@ -187,12 +236,12 @@ There is no bitwise operations (e.g., `<<`).  However, there is a
 
 An alternative is to use algebraic operations to simulate bitwise operations:
 
-| C                      | bit                | algebraic               |
-|------------------------|--------------------|-------------------------|
-| `a << b` (overflowing) | n/a                | `a * 2**b`              |
-| `a << b` (truncating)  | `bit.lshift(a, b)` | `a % 2**(32-b) * 2**b`  |
-| `a >> b` (logical)     | `bit.rshift(a, b)` | `(a - a % 2**b) / 2**b` |
-| `a \| b` (no overlap)  | `bit.bor(a, b)`    | `a + b`                 |
+| C                             | bit                | algebraic               |
+|-------------------------------|--------------------|-------------------------|
+| `a << b` (overflowing)        | n/a                | `a * 2**b`              |
+| `a << b` (truncating)         | `bit.lshift(a, b)` | `a % 2**(32-b) * 2**b`  |
+| `a >> b` (logical)            | `bit.rshift(a, b)` | `(a - a % 2**b) / 2**b` |
+| `a \| b` (when `a & b == 0`)  | `bit.bor(a, b)`    | `a + b`                 |
 
 The floating-point division and modulo operations are apparently
 faster than function calls to simple logical operations.
@@ -210,20 +259,22 @@ as an array of numbers, where each array element represents a
 [signed](https://en.wikipedia.org/wiki/Signedness) slice of that
 number.  [Overflow](https://en.wikipedia.org/wiki/Integer_overflow) is
 accommodated by using 16-bit slices, allowing a sum of a few squares
-of ±2<sub>16</sub> numbers before having to carry overflows.
+of ±2<sup>16</sup> numbers before having to carry overflows.
 
 ## Table Recycling
 
 Table allocation is a costly operation, taking approximately 380ns.
 Many "hot" functions take a table to recycle for their return value.
-The table recycling functions are safe using the same "output" table
-as one of the "inputs".
+The table recycling functions are safe using the same output table
+as one of the inputs.
 
 ## Loop Unraveling
 
-Unlooping the "long multiplication" algorithm in multiply256_t() into
-a non-looping humongous block of code resulted in >5x improvement.
-Thanks for the example, Go core developers!
+Unlooping the [long
+multiplication](https://en.wikipedia.org/wiki/Multiplication_algorithm#Long_multiplication)
+algorithm in multiply256_t() into a non-looping humongous block of
+code resulted in >5x improvement.  Thanks for the example, Go core
+developers!
 
 ## Random
 
