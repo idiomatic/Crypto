@@ -58,70 +58,27 @@ the client extends the capabilities of World of Warcraft.
 
 Certain players (*e.g.*, add-on developers) may wish to be identified,
 perhaps as immediately as upon character rolling.  However, character
-names are not global nor is player identity exposed.  [Hard
-coding](https://en.wikipedia.org/wiki/Hard_coding) a character name is
-fragile as it may already taken on a new realm, or a character may be
-forced to rename.
-
-Alternatively, a published public key can be applied to an
-add-on-channel broadcasted announcement message originating from the
-public player.  That message can be repeated upon request by an
-uninformed player with respondents choosing
-[unicast](https://en.wikipedia.org/wiki/Unicast), broadcast, or ignore
-appropriately to avoid [amplification
-attacks](https://en.wikipedia.org/wiki/Denial-of-service_attack#Amplification).
-
-To avoid spreading misinformation after a character rename or
-deletion, the stashed identification message should eventually expire,
-and be superseded by the most recent valid message.  It is up to the
-public player to defend their character name until the expiration.
+names are not global (*i.e.*, cross-realm) nor is player identity
+exposed.  [Hard coding](https://en.wikipedia.org/wiki/Hard_coding) a
+character name is fragile as the name may already taken on a new
+realm, or a character may be forced to rename and the hardcoded name
+intercepted.
+See (player id)[APPLICATIONS.md#player-id].
 
 ### Data Croudsourcing
 
 Once a character has been identified, an add-on developer can collect
-buffered messages from add-on users.  It is recommended that automatic
-data be capped or
+buffered messages from add-on users.  It is recommended that
+automatically collected data be capped or
 [FIFO](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics))
-to avoid add-on data bloat when the collector is away, unknown, or
+to avoid add-on data bloat when the collector is unknown, away, or
 lost.
 
 ### Tipping
 
-A player providing a useful service may receive in-game currency tips
-by identifying themselves and embedding a mailbox hook.  It is
-recommended that a non-invasive player-centric-designed UI be present,
-otherwise the add-on risks becoming spurned &mdash; and other more
-player-respectful add-ons also with tipping become tainted.
-
-Specific recommendations include:
-
-* a modest button in the add-on's main frame's lower-right corner,
-  about box, or settings panel.
-* pressing the button presents an easily dismissible panel to specify
-  a pledge amount.
-* the panel may inoffensively disregard comically minuscule amounts
-  (*e.g.*, less than 1 silver).
-* the pledge panel may reveal whether the recipient is known on this
-  realm, and the age of the most recent valid identity announcement;
-  this would be a suitable time to request the identity if not already
-  known nor overheard.
-* upon character arrival to a mailbox with an outstanding pledge less
-  than their gold-on-hand, the add-on sends mail with tip attached to
-  the recipient (minus postage).
-* the mailbox panel should not have its behavior overtly changed; it
-  should discretely send the tip rather than linger in the message
-  composition panel.
-* the mail with the attached tip may trigger the mailbox panel to
-  confirm sending an amount; this behavior should be left as-is.
-* the player may be notified in the default chat frame that the tip
-  was sent, as to explain why the "coin drop" sound just played.
-* the player may be notified in the default chat frame that there are
-  insufficent funds at this time; this message may be omitted on
-  subsequent mailbox visits.
-* the insufficient funds default chat frame message may include
-  instructions how to revise or cancel the pledge.
-* once the tip is believed sent, the add-on should reset the pledge to
-  zero, with a preference to resetting versus sending duplicates.
+A player providing a useful service may wish to receive in-game
+currency tips by identifying themselves and embedding a mailbox hook.
+See [tipping](APPLICATIONS.md#tipping)
 
 ### Man-in-the-Middle Communication
 
@@ -240,10 +197,10 @@ s = bytes_to_hex(a)
 
 ## Bitwise Operations
 
-There is no bitwise operations (e.g., `<<`).  However, there is a
+There is no bitwise operations (*e.g.*, `<<`).  However, there is a
 `bit` library of limited utility:
 
-* inputs are apparently truncated to fit within 0 to 2<sup>32</sup>-1.
+* inputs are apparently truncated to fit within 0 to 2<sup>32</sup>&minus;1.
 * the operations are functions, which incurs approximate overhead of 120ns.
 
 An alternative is to use algebraic operations to simulate bitwise operations:
