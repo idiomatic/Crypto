@@ -61,9 +61,8 @@ perhaps as immediately as upon character rolling.  However, character
 names are not global (*i.e.*, cross-realm) nor is player identity
 exposed.  [Hard coding](https://en.wikipedia.org/wiki/Hard_coding) a
 character name is fragile as the name may already taken on a new
-realm, or a character may be forced to rename and the hardcoded name
-intercepted.
-See (player id)[APPLICATIONS.md#player-id].
+realm, or a character may be forced to rename possibly allowing the
+hardcoded name to be intercepted.  See [player id](APPLICATIONS.md#player-id).
 
 ### Data Croudsourcing
 
